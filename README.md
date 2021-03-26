@@ -68,7 +68,7 @@ Before you start CMake or Visual Studio or do anything else, set the `MODEL_VIEW
 7. Close the CMake GUI.
 8. Navigate to the `MODEL_VIEWER_ROOT\build` directory and
    open the `model_viewer.sln` file in Visual Studio.
-9. Right-click on the Part1 project and choose Set as StartUp Project
+9. In the Solution Explorer in Visual Studio, right-click on the `model_viewer` project and choose Set as StartUp Project.
 10. Press F5 to compile and run the program. The resulting executable (`model_viewer.exe`) will be placed in `MODEL_VIEWER_ROOT\build\Debug`
 
 Note 1: The CMake GUI cannot expand environment variables in the text boxes, so you need to specify the full absolute path in the text boxes even if you have set `MODEL_VIEWER_ROOT`.
