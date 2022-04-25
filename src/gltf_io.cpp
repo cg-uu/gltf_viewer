@@ -29,10 +29,12 @@ static bool load_file_to_bytebuffer(const std::string &filename, std::vector<cha
         return false;
     }
 
-    const int BUFFER_SIZE_MAX = 32000000;  // FIXME
-    buffer.resize(BUFFER_SIZE_MAX);
-    buffer.resize(std::fread(&buffer[0], sizeof(char), BUFFER_SIZE_MAX, stream));
-    assert(buffer.size() <= BUFFER_SIZE_MAX);
+    std::fseek(stream, 0, SEEK_END);
+    const uint32_t numBytes = std::ftell(stream) + 1;
+    std::rewind(stream);
+
+    buffer.resize(numBytes);
+    buffer.resize(std::fread(&buffer[0], sizeof(char), numBytes, stream));
     std::fclose(stream);
     return true;
 }
@@ -53,6 +55,26 @@ static bool load_image_to_bytebuffer(const std::string &filename, std::vector<ch
     std::memcpy(&buffer[0], image, width * height * 4);
     stbi_image_free(image);  // Clean up resources
     return true;
+}
+
+static std::vector<Scene> create_scenes_from_json(const json::Value &value)
+{
+    std::vector<Scene> scenes(value.Size());
+    for (uint32_t i = 0; i < value.Size(); ++i) {
+        if (value[i].HasMember("name")) {
+            // Note: this attribute seems to be optional
+            scenes[i].name = value[i]["name"].GetString();
+        }
+
+        if (value[i].HasMember("nodes")) {
+            const json::Value &tmp = value[i]["nodes"];
+            scenes[i].nodes.resize(tmp.Size());
+            for (uint32_t j = 0; j < tmp.Size(); ++j) {
+                scenes[i].nodes[j] = int32_t(tmp[j].GetInt());
+            }
+        }
+    }
+    return scenes;
 }
 
 static std::vector<Node> create_nodes_from_json(const json::Value &value)
@@ -209,9 +231,9 @@ static std::vector<Material> create_materials_from_json(const json::Value &value
         if (value[i].HasMember("occlusionTexture")) {
             auto materialTexture = create_material_texture_from_json(value[i]["occlusionTexture"]);
             materials[i].occlusionTexture = materialTexture;
-            materials[i].hasNormalTexture = true;
+            materials[i].hasOcclusionTexture = true;
         } else {
-            materials[i].hasNormalTexture = false;
+            materials[i].hasOcclusionTexture = false;
         }
     }
     return materials;
@@ -362,6 +384,11 @@ bool load_gltf_asset(const std::string &filename, const std::string &filedir, GL
     root.Parse(&buffer[0]);
 
     asset = GLTFAsset();
+
+    if (root.HasMember("scenes")) {
+        const auto &scenes = create_scenes_from_json(root["scenes"]);
+        asset.scenes = scenes;
+    }
 
     if (root.HasMember("nodes")) {
         auto nodes = create_nodes_from_json(root["nodes"]);
