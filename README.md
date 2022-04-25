@@ -112,8 +112,6 @@ The application depends on the following third-party libraries, which are includ
 
 ### Important To-Do's
 
-- Add support for materials with textures
-- Add support for interleaved vertex formats
 - Add support for inlined Base64-encoded buffers and textures
 
 
