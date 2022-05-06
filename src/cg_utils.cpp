@@ -248,6 +248,7 @@ GLuint load_cubemap_prefiltered(const std::string &dirname)
             stbi_image_free(image);  // Clean up resources
         }
     }
+    glGenerateMipmap(GL_TEXTURE_CUBE_MAP);  // Fix for mipmap completeness
     glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
     return texture;
